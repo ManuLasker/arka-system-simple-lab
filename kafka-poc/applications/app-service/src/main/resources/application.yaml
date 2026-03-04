@@ -38,4 +38,4 @@ reactive:
     kafka:
       app: # this is the name of the default domain
         connectionProperties: # you can override the connection properties of each domain
-          bootstrap-servers: localhost:9092
+          bootstrap-servers: "localhost:9092"
