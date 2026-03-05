@@ -122,8 +122,8 @@ services:
       - .env
     volumes:
       - localstack-data:/var/lib/localstack
-      # - ./localstack/infra.yaml:/etc/localstack/init/ready.d/infra.yaml
-      # - ./localstack/bootstrap.sh:/etc/localstack/init/ready.d/bootstrap.sh
+      - ./localstack/infra.yaml:/etc/localstack/init/ready.d/infra.yaml
+      - ./localstack/bootstrap.sh:/etc/localstack/init/ready.d/bootstrap.sh
       - "/var/run/docker.sock:/var/run/docker.sock"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${LOCALSTACK_PORT}/_localstack/health"]
@@ -149,6 +149,36 @@ services:
       - "8090:8080"  # Dashboard
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - arka-network
+
+  # ═══════════════════════════════════════════════════
+  # MsOrders — Microservicio de Órdenes
+  # ═══════════════════════════════════════════════════
+  ms-orders:
+    build:
+      context: ./ms-orders
+      dockerfile: deployment/Dockerfile
+      args:
+        - PORT=${MS_ORDERS_PORT}
+    container_name: arka-ms-orders
+    ports:
+      - "${MS_ORDERS_PORT}:${MS_ORDERS_PORT}"
+    env_file:
+      - .env
+    depends_on:
+      postgres-orders:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MS_ORDERS_PORT}/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     networks:
       - arka-network
 
